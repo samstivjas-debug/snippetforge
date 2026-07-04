@@ -1,0 +1,30 @@
+# netlify.toml — SnippetForge on Netlify
+# -----------------------------------------------------------------------------
+# Static site (no build step) + one serverless function that proxies AI requests
+# to OpenAI using the server-side OPENAI_API_KEY. The redirect below makes the
+# SAME frontend fetch('/api/generate') work on Netlify exactly like on Vercel.
+#
+# SET YOUR KEY:  Netlify → Site configuration → Environment variables
+#                Key:  OPENAI_API_KEY   Value: sk-...your key...
+# -----------------------------------------------------------------------------
+
+[build]
+  # No build/framework — publish the repo root as-is.
+  publish = "."
+  functions = "netlify/functions"
+
+# Route the frontend's /api/generate call to the Netlify function,
+# so index.html needs zero host-specific code.
+[[redirects]]
+  from = "/api/generate"
+  to = "/.netlify/functions/generate"
+  status = 200
+  force = true
+
+# Sensible security headers (mirrors the Vercel config).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
